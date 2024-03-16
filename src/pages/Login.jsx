@@ -1,21 +1,40 @@
-import { useState } from "react";
-import styles from "./Login.module.css";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/FakeAuthContext";
 import PageNav from "../components/PageNav";
+import styles from "./Login.module.css";
+import Button from "../components/Button";
 export default function Login() {
-  // PRE-FILL FOR DEV PURPOSES
-  const [email, setEmail] = useState("jack@example.com");
-  const [password, setPassword] = useState("qwerty");
+  // FOR DEV PURPOSES - jack@example.com - qwerty
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
+
+  useEffect(
+    function () {
+      if (isAuthenticated) navigate("/app", { replace: true });
+    },
+    [isAuthenticated, navigate]
+  );
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (email && password) login(email, password);
+    else alert("Wrong credentials! Try again..");
+  }
+
   return (
     <main className={styles.login}>
       <PageNav />
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.row}>
           <label htmlFor="email">Email address</label>
           <input
             type="email"
             id="email"
-            onChange={(e) => setEmail(e.target.value)}
             value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
@@ -24,13 +43,15 @@ export default function Login() {
           <input
             type="password"
             id="password"
-            onChange={(e) => setPassword(e.target.value)}
             value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
 
         <div>
-          <button>Login</button>
+          <Button type="primary" onClick={handleSubmit}>
+            Login
+          </Button>
         </div>
       </form>
     </main>

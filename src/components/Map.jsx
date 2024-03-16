@@ -1,5 +1,3 @@
-import styles from "./Map.module.css";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   MapContainer,
   TileLayer,
@@ -9,22 +7,45 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCities } from "../contexts/CitiesContext";
+import { useGeolocation } from "../hooks/useGeolocation";
+import { useUrlPosition } from "../hooks/useUrlPosition";
+import styles from "./Map.module.css";
+import Button from "./Button";
+
 function Map() {
-  const [searchParams] = useSearchParams();
-  // delhi -> [28.613942, 77.206845]
-  const [mapPosition, setMapPosition] = useState([46.2276, 2.2137]);
-  const mapLat = searchParams.get("lat");
-  const mapLng = searchParams.get("lng");
+  const [mapPosition, setMapPosition] = useState([28.613942, 77.206845]);
+  const [mapLat, mapLng] = useUrlPosition();
+
+  const {
+    isLoading: isLoadingPosition,
+    position: geolocationPosition,
+    getPosition,
+  } = useGeolocation();
+
   useEffect(
     function () {
       if (mapLat !== null && mapLng !== null) setMapPosition([mapLat, mapLng]);
     },
     [mapLat, mapLng]
   );
+
+  useEffect(
+    function () {
+      if (geolocationPosition)
+        setMapPosition([geolocationPosition.lat, geolocationPosition.lng]);
+    },
+    [geolocationPosition]
+  );
+
   return (
-    // onClick={() => navigate("form")}
     <div className={styles.mapContainer}>
+      {!geolocationPosition && (
+        <Button type={"position"} onClick={getPosition}>
+          {isLoadingPosition ? "Loading..." : "Use your position"}
+        </Button>
+      )}
       <MapContainer
         className={styles.map}
         center={mapPosition}
@@ -35,7 +56,9 @@ function Map() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
         />
+
         <Markers />
+
         <ChangeCenter position={mapPosition} />
         <MapClick />
       </MapContainer>
@@ -44,6 +67,7 @@ function Map() {
 }
 function Markers() {
   const { cities } = useCities();
+
   return (
     <>
       {cities.map((city) => (
@@ -57,13 +81,14 @@ function Markers() {
     </>
   );
 }
+
 function ChangeCenter({ position }) {
   // In leaflet, map view, etc can only be changed by components. So, a dummy component is created just to change map center
-  console.log(position);
   const map = useMap();
   map.setView(position);
   return null;
 }
+
 function MapClick() {
   const navigate = useNavigate();
   useMapEvents({

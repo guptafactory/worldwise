@@ -1,41 +1,78 @@
-// "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=0&longitude=0"
-
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
-import styles from "./Form.module.css";
+import { useNavigate } from "react-router-dom";
+import { useCities } from "../contexts/CitiesContext";
+import { useReverseGeocode } from "../hooks/useReverseGeocode";
 import Button from "./Button";
 import BackButton from "./BackButton";
-
-export function convertToEmoji(countryCode) {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split("")
-    .map((char) => 127397 + char.charCodeAt());
-  return String.fromCodePoint(...codePoints);
-}
+import Spinner from "./Spinner";
+import Message from "./Message";
+import styles from "./Form.module.css";
 
 function Form() {
-  const [cityName, setCityName] = useState("");
-  const [country, setCountry] = useState("");
-  const [date, setDate] = useState(new Date());
+  const navigate = useNavigate();
+  const { createCity, isLoading } = useCities();
   const [notes, setNotes] = useState("");
+  const [date, setDate] = useState(new Date());
+
+  const [
+    lat,
+    lng,
+    cityName,
+    country,
+    emoji,
+    isLoadingGeocoding,
+    geocodingError,
+    setCityName,
+  ] = useReverseGeocode();
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!cityName || !date) return;
+
+    const newCity = {
+      cityName,
+      country,
+      emoji,
+      date,
+      notes,
+      position: { lat, lng },
+    };
+
+    await createCity(newCity);
+    navigate("/app/cities");
+  }
+
+  if (!lat && !lng)
+    return <Message message={"Start by clicking on map position anywhere."} />;
+  if (geocodingError) return <Message message={geocodingError} />;
+  if (isLoadingGeocoding) return <Spinner />;
+
   return (
-    <form className={styles.form}>
+    <form
+      className={`${styles.form} ${isLoading ? styles.loading : ""}`}
+      onSubmit={(e) => handleSubmit(e)}
+    >
       <div className={styles.row}>
         <label htmlFor="cityName">City name</label>
         <input
           id="cityName"
-          onChange={(e) => setCityName(e.target.value)}
+          disabled={true}
           value={cityName}
+          onChange={(e) => setCityName(e.target.value)}
         />
-        {/* <span className={styles.flag}>{emoji}</span> */}
+        <span className={styles.flag}>{emoji}</span>
       </div>
 
       <div className={styles.row}>
         <label htmlFor="date">When did you go to {cityName}?</label>
-        <input
-          id="date"
-          onChange={(e) => setDate(e.target.value)}
-          value={date}
+        <DatePicker
+          selected={date}
+          onChange={(date) => setDate(date)}
+          dateFormat="dd/MM/yyyy"
+          isClearable
+          placeholderText="Mark the date of visit 🚀"
         />
       </div>
 

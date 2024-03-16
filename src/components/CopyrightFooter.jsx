@@ -1,4 +1,5 @@
 import styles from "./CopyrightFooter.module.css";
+
 function CopyrightFooter() {
   return (
     <footer className={styles.footer}>

@@ -1,9 +1,9 @@
 import { useParams } from "react-router-dom";
-import styles from "./City.module.css";
-import { useCities } from "../contexts/CitiesContext";
 import { useEffect } from "react";
+import { useCities } from "../contexts/CitiesContext";
 import Spinner from "./Spinner";
 import BackButton from "./BackButton";
+import styles from "./City.module.css";
 
 const formatDate = (date) =>
   new Intl.DateTimeFormat("en", {
@@ -16,7 +16,7 @@ const formatDate = (date) =>
 function City() {
   const { id } = useParams();
   const { currentCity, getCurrentCity, isLoading } = useCities();
-
+  // Note: getCurrentCity shouldn't be passed to the useEffect as It will cause infinite calls
   useEffect(
     function () {
       if (!id) throw new Error("City id can't be fetched");
@@ -24,8 +24,11 @@ function City() {
     },
     [id]
   );
+
   const { cityName, emoji, date, notes } = currentCity;
+
   if (isLoading) return <Spinner />;
+
   return (
     <div className={styles.city}>
       <div className={styles.row}>
@@ -57,6 +60,7 @@ function City() {
           Check out {cityName} on Wikipedia &rarr;
         </a>
       </div>
+
       <div>{<BackButton />}</div>
     </div>
   );
