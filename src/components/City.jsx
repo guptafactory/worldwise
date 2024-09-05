@@ -16,13 +16,13 @@ const formatDate = (date) =>
 function City() {
   const { id } = useParams();
   const { currentCity, getCurrentCity, isLoading } = useCities();
-  // Note: getCurrentCity shouldn't be passed to the useEffect as It will cause infinite calls
+
   useEffect(
     function () {
       if (!id) throw new Error("City id can't be fetched");
       getCurrentCity(id);
     },
-    [id]
+    [id, getCurrentCity]
   );
 
   const { cityName, emoji, date, notes } = currentCity;
