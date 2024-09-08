@@ -5,7 +5,7 @@ import PageNav from "../components/PageNav";
 import styles from "./Login.module.css";
 import Button from "../components/Button";
 export default function Login() {
-  // FOR DEV PURPOSES - jack@example.com - qwerty
+  // FOR DEV PURPOSES - admin@gmail.com - admin
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -35,6 +35,7 @@ export default function Login() {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholer="admin@gmail.com"
           />
         </div>
 
@@ -45,6 +46,7 @@ export default function Login() {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="admin"
           />
         </div>
 
